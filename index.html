@@ -165,7 +165,7 @@ function connect(url){let w,ok=false,done=false,tm;
  net.ws=w;net.abort=()=>{done=true;clearTimeout(tm);try{w.close()}catch(e){}};
  panel(`<h2>CONECTANDO...</h2><div class=r>${esc(url)}</div><div class=r>El servidor gratis puede tardar hasta 1 minuto en despertar.</div><button data-a=cancel>CANCELAR</button>`);
  tm=setTimeout(()=>{if(!ok)fail('Sin respuesta tras 90 segundos. Abrí la dirección https:// del servidor en otra pestaña para despertarlo y probá de nuevo.')},90000);
- w.onopen=()=>{ok=true;clearTimeout(tm);raw({t:'list'})};
+ w.onopen=()=>{ok=true;clearTimeout(tm);raw({t:'list'});setTimeout(()=>{if(!net.lob&&!net.on)fail('Conectó, pero el servidor no responde la lista de salas. Seguramente tiene una versión vieja de server.js: subí el nuevo a GitHub.')},8000)};
  w.onerror=()=>{if(!ok)fail('No se pudo conectar. Revisá la dirección. Si usás Brave, desactivá los escudos para esta página.')};
  w.onclose=ev=>{if(!ok)fail('Conexión rechazada (código '+ev.code+'). Revisá la dirección y los escudos del navegador.');else if(net.on){net.on=false;main('Se perdió la conexión')}else if(net.lob){net.lob=false;online('Servidor desconectado')}};
  w.onmessage=ev=>{let d;try{d=JSON.parse(ev.data)}catch(e){return}
