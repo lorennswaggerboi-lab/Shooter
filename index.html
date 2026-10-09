@@ -157,12 +157,17 @@ function onNet(d){
  else if(d.t==='c'){V.coins+=d.n;num(d.x,d.y-10,'+'+d.n,'#ffd23f');sCoin()}
  else if(d.t==='left')delete net.rem[d.id];
  else if(d.t==='host'){net.host=true;nid=enemies.reduce((a,e)=>Math.max(a,e.id),0)+1}}
-const DEFAULT_SERVER='wss://shooter-nhyt.onrender.com'; // <-- cambialo por la direccion de tu servidor (wss://...)
+const DEFAULT_SERVER='ws://localhost:8080'; // <-- cambialo por la direccion de tu servidor (wss://...)
 const raw=o=>{if(net.ws&&net.ws.readyState===1)net.ws.send(JSON.stringify(o))};
-function connect(url){let w,ok=false;try{w=new WebSocket(url)}catch(e){return online('URL inválida')}net.ws=w;
- w.onopen=()=>{ok=true;raw({t:'list'})};
- w.onerror=()=>{if(!ok)online('No se pudo conectar al servidor')};
- w.onclose=()=>{if(net.on){net.on=false;main('Se perdió la conexión')}else if(ok&&net.lob){net.lob=false;online('Servidor desconectado')}};
+function connect(url){let w,ok=false,done=false,tm;
+ const fail=m=>{if(done)return;done=true;clearTimeout(tm);try{w.close()}catch(e){}online(m)};
+ try{w=new WebSocket(url)}catch(e){return online('Dirección inválida. Tiene que empezar con wss://')}
+ net.ws=w;net.abort=()=>{done=true;clearTimeout(tm);try{w.close()}catch(e){}};
+ panel(`<h2>CONECTANDO...</h2><div class=r>${esc(url)}</div><div class=r>El servidor gratis puede tardar hasta 1 minuto en despertar.</div><button data-a=cancel>CANCELAR</button>`);
+ tm=setTimeout(()=>{if(!ok)fail('Sin respuesta tras 90 segundos. Abrí la dirección https:// del servidor en otra pestaña para despertarlo y probá de nuevo.')},90000);
+ w.onopen=()=>{ok=true;clearTimeout(tm);raw({t:'list'})};
+ w.onerror=()=>{if(!ok)fail('No se pudo conectar. Revisá la dirección. Si usás Brave, desactivá los escudos para esta página.')};
+ w.onclose=ev=>{if(!ok)fail('Conexión rechazada (código '+ev.code+'). Revisá la dirección y los escudos del navegador.');else if(net.on){net.on=false;main('Se perdió la conexión')}else if(net.lob){net.lob=false;online('Servidor desconectado')}};
  w.onmessage=ev=>{let d;try{d=JSON.parse(ev.data)}catch(e){return}
   if(d.t==='rooms'){net.rooms=d.l;if(!net.on){if(!net.lob){net.lob=true;lobby()}else updRooms();setTimeout(()=>{if(net.lob&&!net.on)raw({t:'list'})},3000)}}
   else if(d.t==='full')lobby('Esa sala está llena');
@@ -248,7 +253,7 @@ const A={camp:()=>start('camp',1),surv:()=>start('surv'),online:()=>online(),ava
  resume:()=>{paused=false;close()},quit:()=>{if(net.on){net.on=false;try{net.ws.close()}catch(e){}}save();main()},
  eq:v=>{V.eq=+v;save();shop()},buy:v=>{const w=WP[+v];if(V.coins>=w.pr){V.coins-=w.pr;V.owned.push(+v);V.eq=+v;save();shop()}},
  col:(v,k)=>{V.av[k]=v;save();avatar()},acc:v=>{V.av.acc=+v;save();avatar()},
- conn:()=>{V.srv=$('#su').value.trim();save();connect(V.srv)},join:v=>raw({t:'join',room:v}),make:()=>{const n=$('#nr').value.trim().slice(0,20);if(n)raw({t:'join',room:n})},lback:()=>{net.lob=false;if(!net.on)try{net.ws.close()}catch(e){}main()}};
+ conn:()=>{V.srv=$('#su').value.trim();save();connect(V.srv)},join:v=>raw({t:'join',room:v}),make:()=>{const n=$('#nr').value.trim().slice(0,20);if(n)raw({t:'join',room:n})},cancel:()=>{if(net.abort)net.abort();online()},lback:()=>{net.lob=false;if(!net.on)try{net.ws.close()}catch(e){}main()}};
 ui.addEventListener('click',e=>{const d=e.target.dataset;if(!d.a)return;initAudio();A[d.a](d.v,d.k)});
 ui.addEventListener('input',e=>{const k=e.target.dataset.k;if(!k)return;
  if(k==='name'){V.av.name=e.target.value.slice(0,12)||'Jugador';save();return}
