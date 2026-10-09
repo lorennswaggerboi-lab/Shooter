@@ -157,7 +157,7 @@ function onNet(d){
  else if(d.t==='c'){V.coins+=d.n;num(d.x,d.y-10,'+'+d.n,'#ffd23f');sCoin()}
  else if(d.t==='left')delete net.rem[d.id];
  else if(d.t==='host'){net.host=true;nid=enemies.reduce((a,e)=>Math.max(a,e.id),0)+1}}
-const DEFAULT_SERVER='ws://localhost:8080'; // <-- cambialo por la direccion de tu servidor (wss://...)
+const DEFAULT_SERVER='wss://shooter-nhyt.onrender.com'; // <-- cambialo por la direccion de tu servidor (wss://...)
 const raw=o=>{if(net.ws&&net.ws.readyState===1)net.ws.send(JSON.stringify(o))};
 function connect(url){let w,ok=false;try{w=new WebSocket(url)}catch(e){return online('URL inválida')}net.ws=w;
  w.onopen=()=>{ok=true;raw({t:'list'})};
