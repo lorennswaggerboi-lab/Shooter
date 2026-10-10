@@ -49,6 +49,8 @@ input[type=range]{width:14cqw}
 .it.eq{border-color:#ffe66d}.it span{font-size:.8em;opacity:.8;min-height:2.6em}.it button{margin:0}
 .ic{width:6cqw;height:6cqw;image-rendering:pixelated}
 #hud{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+html:fullscreen #w{max-width:calc(100vh*16/9)}
+html:-webkit-full-screen #w{max-width:calc(100vh*16/9)}
 #fs{position:absolute;top:1cqw;right:1cqw;z-index:5;margin:0;padding:.5cqw .9cqw;font-size:max(10px,1.8cqw)}
 </style></head><body><div id="w"><canvas id="c"></canvas><canvas id="hud"></canvas><button id="fs" tabindex="-1" title="Pantalla completa">⛶</button><div id="ui"></div></div>
 <script>
@@ -130,7 +132,7 @@ function start(md,lv,mp){mode=md;lvl=lv||1;mapIdx=mp||0;
  if(md==='camp')genMap(lvl*7,Math.floor((lvl-1)/2)%3,true);else{const M=MAPS[mapIdx];genMap(M.sd,M.pi,false)}
  p={ar:ARM[V.arm]?ARM[V.arm].a:0,x:MW*T/2,y:MH*T/2,hp:5,cd:0,inv:0,ang:0,walk:0,moving:false,kick:0,dead:0};
  bullets=[];enemies=[];hearts=[];coins=[];parts=[];nums=[];eb=[];shw=[];kills=0;spawnT=1;boss=null;bd=false;key=false;nb=30;rt=300;net.sc={};lsb=[];spec=0;vote=null;pet=null;state='play';paused=false;close();
- ms=md==='camp'&&lvl===1?newMission(0):newMission();banner(md==='camp'?'NIVEL '+lvl:MAPS[mapIdx].n)}
+ buildMini();ms=md==='camp'&&lvl===1?newMission(0):newMission();banner(md==='camp'?'NIVEL '+lvl:MAPS[mapIdx].n)}
 const tier=()=>mode==='camp'?lvl:1+Math.floor(kills/10),hpMul=()=>mode==='camp'?1+.2*(lvl-1):1+.07*(tier()-1),isBossLvl=()=>mode==='camp'&&lvl%5===0,bossFor=()=>BOSS[(lvl/5-1)%4],goalDone=()=>isBossLvl()?bd:kills>=goal();
 function mk(k,x,y){const d=EN[k],hp=Math.ceil(d.hp*(d.boss?(mode==='camp'?1+.15*(lvl-1):1+.1*(tier()-1)):hpMul())),e={id:nid++,k,x,y,hp,mx:hp,ph:Math.random()*6,fl:0,hb:0,at:3,st:0,tm:0,z:0};enemies.push(e);return e}
 function spawn(k){const d=EN[k];for(let i=0;i<14;i++){const a=Math.random()*6.283,r=150+Math.random()*40,x=p.x+Math.cos(a)*r,y=p.y+Math.sin(a)*r,tl=tile(x,y);if(tl===0||(d.nc&&tl!==1&&tl!==3&&x>16&&y>16&&x<(MW-1)*T&&y<(MH-1)*T))return mk(k,x,y)}}
@@ -176,6 +178,9 @@ function aiMove(e,dt,sm,tg){const d=EN[e.k],k=e.k,dx=tg.x-e.x,dy=tg.y-e.y,dist=M
   if(e.rt<=0){for(let i=0;i<3;i++)mk(1,e.x+rnd(-24,24),e.y+rnd(-24,24));e.rt=7}}
  else go(a,sp)}
 const board=()=>{const Lb=[[net.id,V.av.name,net.sc[net.id]||0]];for(const id in net.rem)Lb.push([+id,net.rem[id].name||'?',net.sc[id]||0]);return Lb.sort((a,b)=>b[2]-a[2])};
+function safeSpot(){const cx=MW*T/2,cy=MH*T/2,cand=[[cx,cy]];for(let i=0;i<40;i++)cand.push([rnd(3,MW-4)*T+8,rnd(3,MH-4)*T+8]);let best=null,bs=-1e9;
+ for(const[x,y]of cand){if(hit4(x,y,5))continue;let md=1e9;for(const e of enemies)md=Math.min(md,Math.hypot(e.x-x,e.y-y));const sc=Math.min(md,400)-.15*Math.hypot(x-cx,y-cy);if(sc>bs){bs=sc;best=[x,y]}}
+ if(best){p.x=best[0];p.y=best[1]}burst(p.x,p.y-6,'#7df9ff',14);banner('¡REAPARECISTE!')}
 function goDoor(){if(net.on&&!net.host){if(t-(net.nlT||-9)>1){net.nlT=t;snd({t:'nl',lv:lvl})}return}V.coins+=lvl*10;save();start('camp',lvl+1)}
 function endRound(){const lb=board(),w=lb[0]&&lb[0][2]>0?lb[0][0]:0,o=MAPS.map((_,i)=>i).filter(i=>i!==mapIdx).sort(()=>Math.random()-.5).slice(0,3);snd({t:'re',lb,w,o});roundEnd(lb,w,o)}
 function roundEnd(lb,w,o){state='vote';bullets=[];eb=[];if(w&&w===myId()){V.coins+=100;save()}vote={lb,w,o,votes:{},t:20,bt:0,mine:-1};showVote()}
@@ -197,7 +202,7 @@ function update(dt){
  p.ang=Math.atan2(my+camy-(p.y-6),mx+camx-p.x);
  p.cd-=dt;p.inv-=dt;p.kick=Math.max(0,p.kick-dt*40);
  if(p.dead>1000){if(mdown&&!p.mm)spec++;p.mm=mdown}
- if(p.dead>0){p.dead-=dt;if(p.dead<=0){p.dead=0;p.hp=5;p.inv=2}}
+ if(p.dead>0){p.dead-=dt;if(p.dead<=0){p.dead=0;p.hp=5;p.inv=3;safeSpot()}}
  else if(!paused&&(mdown||keys[' '])&&p.cd<=0)shoot();
  if(net.on&&mode==='surv'){rt-=dt;if(net.host&&rt<=0){endRound();return}}
  if(net.on&&net.host&&mode==='camp'&&p.dead>1000&&Object.values(net.rem).every(r=>r.dd)){snd({t:'rs'});start('camp',lvl);return}
@@ -298,6 +303,18 @@ function drawEnemy(e){
  if(e.hb>0&&!d.boss){const w=k===4?20:12,pc=Math.max(0,e.hp/e.mx);Q(-w/2,top,w,3,'#111');Q(-w/2+1,top+1,(w-2)*pc,1,'#e43b44')}}
 function drawTree(x,y){const R=(a,b,w,h,col)=>{g.fillStyle=col;g.fillRect(Math.round(x-camx+a),Math.round(y-camy+b),w,h)};
  R(6,6,4,10,'#5d3a1a');R(0,-4,16,11,pal.tr);R(2,-8,12,5,pal.tr);R(3,-6,5,3,pal.tl);R(9,-1,4,3,pal.tl)}
+let mm=null,mini=true;
+function buildMini(){mm=document.createElement('canvas');mm.width=MW;mm.height=MH;const x=mm.getContext('2d');
+ for(let ty=0;ty<MH;ty++)for(let tx=0;tx<MW;tx++){const k=m[ty*MW+tx];x.fillStyle=k===1?pal.tr:k===2?pal.w:k===3?'#c9a227':pal.a;x.fillRect(tx,ty,1,1)}}
+function drawMini(){if(!mini||!mm)return;const mw=66,mh=Math.round(66*MH/MW),X=W-mw-5,Y=H-mh-5;
+ hg.imageSmoothingEnabled=false;hg.globalAlpha=.92;hg.drawImage(mm,X*hs,Y*hs,mw*hs,mh*hs);hg.globalAlpha=1;
+ hg.strokeStyle='#000';hg.lineWidth=Math.max(1,hs*.6);hg.strokeRect(X*hs,Y*hs,mw*hs,mh*hs);
+ const sx=mw/(MW*T),sy=mh/(MH*T),dot=(x,y,s_,col)=>{hg.fillStyle=col;hg.fillRect((X+x*sx-s_/2)*hs,(Y+y*sy-s_/2)*hs,s_*hs,s_*hs)};
+ hg.strokeStyle='rgba(255,255,255,.7)';hg.lineWidth=Math.max(1,hs*.3);hg.strokeRect((X+camx*sx)*hs,(Y+camy*sy)*hs,W*sx*hs,H*sy*hs);
+ if(door&&key)dot(door.x,door.y,4,'#ffe66d');
+ for(const e of enemies)dot(e.x,e.y,EN[e.k].boss?4:1.6,EN[e.k].boss?'#c77dff':'#ff4d4d');
+ for(const id in net.rem){const r=net.rem[id];if(r.av)dot(r.x,r.y,2.6,r.dd?'#888':'#7df9ff')}
+ if(p.dead<=1000)dot(p.x,p.y,3,'#fff')}
 function drawDoor(X,Y){const R=(a,b,w,h,col)=>{g.fillStyle=col;g.fillRect(Math.round(X-camx+a),Math.round(Y-camy+b),w,h)};
  R(-2,-4,20,20,'#3a3a4a');
  if(key){R(1,-2,14,18,'#0c0e1c');R(1,-2,14,2,'#7df9ff');R(1,-2,2,18,'#7df9ff');R(13,-2,2,18,'#7df9ff');R(5,4,6,8,Math.sin(t*4)>0?'#7df9ffcc':'#7df9ff77')}
@@ -341,15 +358,15 @@ function draw(){
  g.fillStyle='#ffd23f';g.fillRect(4,14,5,5);TX(V.coins,12,19,5,'#fff');
  if(ms)TX('MISIÓN: '+ms.t+(ms.done?' OK':' '+Math.floor(ms.v)+'/'+ms.n),4,28,3.6,ms.done?'#7df9a0':'#cfe8ff');
  if(key)TX('LLAVE OK',4,35,3.6,'#ffe66d');
- TX(mode==='camp'?'BAJAS '+kills:'OLEADA '+(1+Math.floor(kills/10))+'  BAJAS '+kills,W-5,9,3.8,'#fff','right');
+ TX(mode==='camp'?'BAJAS '+kills:'OLEADA '+(1+Math.floor(kills/10))+'  BAJAS '+kills,W-17,9,3.8,'#fff','right');
  if(net.on&&mode==='surv'){const s_=Math.max(0,Math.ceil(rt));TX(Math.floor(s_/60)+':'+String(s_%60).padStart(2,'0'),W/2,11,6,s_<30?'#ff6b6b':'#fff','center');
-  lsb.slice(0,5).forEach((r,i)=>TX((i+1)+'. '+String(r[1]).slice(0,10)+' '+r[2],W-5,17+i*6,3.4,r[0]===net.id?'#ffe66d':'#fff','right'))}
- else if(net.on)TX('JUGADORES '+(Object.keys(net.rem).length+1),W-5,16,3.4,'#9ad1ff','right');
+  lsb.slice(0,5).forEach((r,i)=>TX((i+1)+'. '+String(r[1]).slice(0,10)+' '+r[2],W-17,17+i*6,3.4,r[0]===net.id?'#ffe66d':'#fff','right'))}
+ else if(net.on)TX('JUGADORES '+(Object.keys(net.rem).length+1),W-17,16,3.4,'#9ad1ff','right');
  if(mode==='camp'){if(isBossLvl())bar(boss?EN[boss.k].n.toUpperCase():(bd?'JEFE DERROTADO':'JEFE'),boss?boss.hp/boss.mx:(bd?0:1),'#8a3fd1',3);else bar('NIVEL '+lvl+'  '+Math.min(kills,goal())+'/'+goal(),kills/goal(),'#38b764',3);
   const hint=key?'ANDÁ A LA PUERTA':goalDone()?'COMPLETÁ LA MISIÓN':'';if(hint)TX(hint,W/2,21,3.6,'#ffe66d','center')}
  else if(boss&&!boss.dead)bar(EN[boss.k].n.toUpperCase(),boss.hp/boss.mx,'#8a3fd1',net.on?16:3);
  TX((V.eq+1)+' '+WP[V.eq].n.toUpperCase()+'   B TIENDA',4,H-5,3.8,WP[V.eq].col);
- drawArrow();
+ drawArrow();drawMini();
  if(bn.l>0){hg.globalAlpha=Math.min(1,bn.l);TX(bn.s,W/2,58,8,'#ffe66d','center');hg.globalAlpha=1}
  if(p.dead>0&&p.dead<=1000)TX('REAPARECIENDO EN '+Math.ceil(p.dead),W/2,H/2,6,'#fff','center');
  if(p.dead>1000){const al=aliveRem(),r=al.length?al[spec%al.length]:null;TX('ESPECTADOR'+(r?': '+(r.name||'?'):''),W/2,H-16,5,'#ffe66d','center');TX('CLICK PARA CAMBIAR · REVIVÍS EN EL PRÓXIMO NIVEL',W/2,H-7,3.4,'#fff','center')}
@@ -363,7 +380,7 @@ function close(){ui.classList.remove('on');ui.innerHTML=''}
 const open=()=>ui.classList.contains('on');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function drawPv(){const q=$('#pv');if(!q)return;const x=q.getContext('2d');x.clearRect(0,0,40,44);drawChar(x,20,38,{ang:1.3,walk:0,moving:false,arm:V.arm},V.av)}
-function main(msg){state='menu';paused=false;ret=main;panel(`<div class=mm><h1>PIXEL SHOOTER<small>SOBREVIVÍ · COMPRÁ ARMAS · JUGÁ CON AMIGOS</small></h1>${msg?`<div style="color:#ff9d9d;margin-top:1.2cqw">${esc(msg)}</div>`:''}<div class=cols><div class=nav><button class=s data-a=camp>▶ CAMPAÑA</button><button data-a=surv>SUPERVIVENCIA</button><button data-a=online>ONLINE</button><button data-a=shop>TIENDA</button><button data-a=set>AJUSTES</button></div><div class=card><input type=text data-k=name maxlength=12 placeholder="TU USUARIO" value="${esc(V.av.name)}"><canvas id=pv width=40 height=44 style="width:11cqw;height:12cqw;image-rendering:pixelated"></canvas><button data-a=avatar>PERSONALIZAR</button><div style="color:#ffd23f">● ${V.coins}</div></div><div class=info>WASD · MOVER<br>MOUSE · APUNTAR Y DISPARAR<br>1-5 · CAMBIAR ARMA<br>B · TIENDA<br>ESC · PAUSA</div></div></div>`,1);drawPv()}
+function main(msg){state='menu';paused=false;ret=main;panel(`<div class=mm><h1>PIXEL SHOOTER<small>SOBREVIVÍ · COMPRÁ ARMAS · JUGÁ CON AMIGOS</small></h1>${msg?`<div style="color:#ff9d9d;margin-top:1.2cqw">${esc(msg)}</div>`:''}<div class=cols><div class=nav><button class=s data-a=camp>▶ CAMPAÑA</button><button data-a=surv>SUPERVIVENCIA</button><button data-a=online>ONLINE</button><button data-a=shop>TIENDA</button><button data-a=set>AJUSTES</button></div><div class=card><input type=text data-k=name maxlength=12 placeholder="TU USUARIO" value="${esc(V.av.name)}"><canvas id=pv width=40 height=44 style="width:11cqw;height:12cqw;image-rendering:pixelated"></canvas><button data-a=avatar>PERSONALIZAR</button><div style="color:#ffd23f">● ${V.coins}</div></div><div class=info>WASD · MOVER<br>MOUSE · APUNTAR Y DISPARAR<br>1-5 · CAMBIAR ARMA<br>B · TIENDA<br>ESC · PAUSA<br>F · PANTALLA COMPLETA<br>M · MINIMAPA</div></div></div>`,1);drawPv()}
 function pauseMenu(){paused=true;ret=pauseMenu;panel(`<h2>Pausa</h2><button class=s data-a=resume>Continuar</button><button data-a=shop>Tienda</button><button data-a=set>Ajustes</button><button data-a=quit>Salir al menú</button>`)}
 function over(){ret=over;panel(`<h2>Game Over</h2><div class=r>Bajas: ${kills} · Mejor: ${best}</div><button class=s data-a=retry>Reintentar</button><button data-a=shop>Tienda</button><button data-a=quit>Menú</button>`)}
 function clearMenu(){ret=clearMenu;panel(lvl<5?`<h2>¡Nivel ${lvl} completado!</h2><div class=r>Bonus: +${lvl*10} monedas</div><button class=s data-a=next>Siguiente nivel</button><button data-a=shop>Tienda</button><button data-a=quit>Menú</button>`:`<h2>¡VICTORIA!</h2><div class=r>Derrotaste al Rey Slime. Bonus: +50 monedas</div><button data-a=shop>Tienda</button><button class=s data-a=quit>Menú</button>`);if(lvl===5){V.coins+=40;save()}}
@@ -422,7 +439,7 @@ ui.addEventListener('input',e=>{const k=e.target.dataset.k;if(!k)return;
  if(k==='name'){V.av.name=e.target.value.slice(0,12)||'Jugador';save();return}
  S[k]=+e.target.value;e.target.nextElementSibling.textContent=k==='sens'?S[k]:pc(S[k]);vol();save()});
 // ---------- controles ----------
-addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;const pl=state==='play'&&!open();
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;const pl=state==='play'&&!open();if(pl&&k==='m')mini=!mini;if(k==='f'&&!(e.target&&e.target.tagName==='INPUT'))toggleFS();
  if(k===' '&&pl)e.preventDefault();
  if(k==='escape'&&state==='play'){paused?A.resume():pauseMenu()}
  if(pl&&k>='1'&&k<='5'){const i=+k-1;if(V.owned.includes(i))V.eq=i}
@@ -438,7 +455,10 @@ c.addEventListener('pointermove',e=>{
 const up=e=>{if(e.pointerId===stickId){stick=null;stickId=null}else{mdown=false;aimId=null}};
 addEventListener('pointerup',up);c.addEventListener('pointercancel',up);c.addEventListener('contextmenu',e=>e.preventDefault());
 document.addEventListener('pointerlockchange',()=>{if(!document.pointerLockElement&&state==='play'&&!open())pauseMenu()});
-genMap(3,0);p={ar:0,x:MW*T/2,y:MH*T/2,hp:5,cd:0,inv:0,ang:0,walk:0,moving:false,kick:0,dead:0};
-document.getElementById('fs').addEventListener('click',e=>{const d=document,el=d.documentElement;try{if(d.fullscreenElement||d.webkitFullscreenElement)(d.exitFullscreen||d.webkitExitFullscreen).call(d);else(el.requestFullscreen||el.webkitRequestFullscreen).call(el)}catch(er){}e.target.blur()});
+genMap(3,0);buildMini();p={ar:0,x:MW*T/2,y:MH*T/2,hp:5,cd:0,inv:0,ang:0,walk:0,moving:false,kick:0,dead:0};
+const fsb=document.getElementById('fs'),isFS=()=>document.fullscreenElement||document.webkitFullscreenElement;
+function toggleFS(){const d=document,el=d.documentElement;try{if(isFS())(d.exitFullscreen||d.webkitExitFullscreen).call(d);else(el.requestFullscreen||el.webkitRequestFullscreen).call(el)}catch(er){}}
+const fsUpd=()=>{fsb.textContent=isFS()?'✕':'⛶';fsb.title=isFS()?'Salir de pantalla completa (F)':'Pantalla completa (F)'};
+fsb.addEventListener('click',e=>{toggleFS();e.target.blur()});document.addEventListener('fullscreenchange',fsUpd);document.addEventListener('webkitfullscreenchange',fsUpd);fsUpd();
 main();requestAnimationFrame(loop);
 </script></body></html>
