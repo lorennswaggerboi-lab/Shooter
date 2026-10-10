@@ -4,54 +4,158 @@
 <meta name="description" content="Shooter de píxeles cooperativo online">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
+:root {
+  --bg-core: #07050f;
+  --panel-bg: rgba(13, 11, 26, 0.94);
+  --panel-border: #4d3c77;
+  --accent-gold: #fbc531;
+  --accent-cyan: #00d2d3;
+  --accent-pink: #ff4757;
+  --accent-purple: #9b59b6;
+  --text-main: #f5f6fa;
+  --text-dim: #a5b1c2;
+}
+
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html,body{height:100%;margin:0;background:#1a1c2c;font-family:monospace;color:#fff}
-body{display:flex;align-items:center;justify-content:center}
-#w{position:relative;width:100%;max-width:calc((100vh - 20px)*16/9)}
+html,body{height:100%;margin:0;background:var(--bg-core);font-family:'Press Start 2P',monospace;color:var(--text-main);overflow:hidden;user-select:none}
+body{display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at center, #1b143f 0%, #07050f 100%)}
+
+#w{position:relative;width:100%;max-width:calc((100vh - 20px)*16/9);box-shadow:0 0 40px rgba(0,0,0,0.8), 0 0 20px rgba(155,89,182,0.15);border-radius:6px;overflow:hidden}
 canvas#c{display:block;image-rendering:pixelated;width:100%;aspect-ratio:16/9;background:#000;cursor:none;touch-action:none}
-#ui{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(10,10,30,.84)}
+#ui{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(5, 4, 12, 0.88);backdrop-filter:blur(8px);z-index:10;animation:menuFadeIn .2s cubic-bezier(0.16, 1, 0.3, 1)}
 #ui.on{display:flex}
-.p{background:#262b44;border:3px solid #ffe66d;padding:10px 14px;max-width:94%;max-height:96%;overflow:auto;text-align:center;font-size:clamp(9px,1.7vw,14px)}
-.p h2{margin:0 0 8px;color:#ffe66d}
-button{font:inherit;background:#3a4466;color:#fff;border:2px solid #8b9bb4;padding:5px 10px;margin:3px;cursor:pointer}
-button:hover{background:#5a6988}button.s{border-color:#ffe66d}button:disabled{opacity:.4;cursor:default}
-input[type=range]{width:130px;vertical-align:middle}
-input[type=text]{font:inherit;background:#111;color:#fff;border:2px solid #8b9bb4;padding:3px;width:140px}
-.sw{display:inline-block;width:20px;height:20px;border:2px solid #555;margin:2px;cursor:pointer}.sw.s{border-color:#fff}
-.r{margin:6px 0}
+
+@keyframes menuFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Contenedor Principal Estilo Panel Táctico AAA */
+.p {
+  background: linear-gradient(135deg, rgba(22, 18, 43, 0.95) 0%, rgba(10, 8, 22, 0.98) 100%);
+  border: 3px solid var(--accent-gold);
+  box-shadow: 0 0 0 4px #000, 0 15px 40px rgba(0,0,0,0.9), inset 0 0 25px rgba(155,89,182,0.15);
+  padding: 2.5cqw 3cqw;
+  max-width: 92%;
+  max-height: 94%;
+  overflow: auto;
+  text-align: center;
+  font-size: max(8px, 1.3cqw);
+  line-height: 1.8;
+  border-radius: 6px;
+}
+
+.p::-webkit-scrollbar { width: 6px; }
+.p::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); }
+.p::-webkit-scrollbar-thumb { background: var(--accent-purple); border-radius: 3px; }
+
+.p h2 {
+  margin: 0 0 1.5cqw;
+  color: var(--accent-gold);
+  font-size: max(13px, 2.4cqw);
+  letter-spacing: 2px;
+  text-shadow: 3px 3px #000, 0 0 12px rgba(251, 197, 49, 0.4);
+  text-transform: uppercase;
+}
+
+/* Botones con Estilo de Alta Gama (Neón / Retro-moderno) */
+button {
+  font: inherit;
+  font-family: 'Press Start 2P', monospace;
+  background: linear-gradient(180deg, #2c2250 0%, #15102d 100%);
+  color: #fff;
+  border: 2px solid #574b90;
+  box-shadow: 0 4px 0 #07050f, inset 0 2px 0 rgba(255,255,255,0.15);
+  padding: 1.1cqw 1.8cqw;
+  margin: 4px;
+  cursor: pointer;
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 4px;
+  text-shadow: 1px 1px #000;
+  font-size: max(8px, 1.2cqw);
+}
+
+button:hover {
+  background: linear-gradient(180deg, #3d306b 0%, #20183f 100%);
+  border-color: var(--accent-cyan);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #07050f, 0 0 12px rgba(0, 210, 211, 0.4);
+}
+
+button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 #07050f;
+}
+
+button.s {
+  background: linear-gradient(180deg, #fbc531 0%, #e1b12c 100%);
+  color: #1a1c2c;
+  border-color: #fff;
+  text-shadow: none;
+  font-weight: bold;
+  box-shadow: 0 4px 0 #8f6b00, inset 0 2px 0 rgba(255,255,255,0.6);
+}
+
+button.s:hover {
+  background: linear-gradient(180deg, #ffd32a 0%, #f39c12 100%);
+  box-shadow: 0 6px 0 #8f6b00, 0 0 15px rgba(251, 197, 49, 0.6);
+  color: #000;
+}
+
+button:disabled {
+  opacity: .35;
+  cursor: default;
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: #444 !important;
+}
+
+input[type=range]{width:16cqw;accent-color:var(--accent-gold);cursor:pointer;vertical-align:middle}
+input[type=text]{font:inherit;font-family:'Press Start 2P',monospace;background:#05040f;color:var(--accent-cyan);border:2px solid #574b90;padding:0.9cqw;width:15cqw;text-align:center;border-radius:3px;box-shadow:inset 0 0 6px #000}
+input[type=text]:focus{border-color:var(--accent-cyan);box-shadow:inset 0 0 6px #000, 0 0 8px rgba(0,210,211,0.4);outline:none}
+
+.sw{display:inline-block;width:max(16px,2cqw);height:max(16px,2cqw);border:2px solid #443868;margin:3px;cursor:pointer;border-radius:3px;transition:transform .1s}
+.sw:hover{transform:scale(1.2)}
+.sw.s{border-color:#fff;box-shadow:0 0 8px #fff}
+.r{margin:1cqw 0}
+
 #w{container-type:inline-size}
-body,button,input{font-family:'Press Start 2P',monospace}
-#ui{overflow:auto;background:rgba(8,10,28,.8);backdrop-filter:blur(3px)}
-.p{background:linear-gradient(#2b3150,#1d2138);border:3px solid #ffe66d;box-shadow:0 0 0 3px #0c0e1c,0 10px 30px #000a;padding:2.2cqw 2.6cqw;font-size:max(8px,1.4cqw);line-height:1.7}
-.p h2{font-size:max(11px,2.3cqw);letter-spacing:1px;text-shadow:2px 2px #000;margin:0 0 1.5cqw}
-button{font-size:max(8px,1.4cqw);background:#3a4466;border:2px solid #0c0e1c;box-shadow:inset 0 -3px #252b45,inset 0 2px #5a6a99;padding:.9cqw 1.4cqw;transition:transform .08s}
-button:hover{background:#4e5d8c;transform:translateY(-1px)}
-button:active{transform:translateY(1px)}
-button.s{background:#e6a817;color:#1a1c2c;box-shadow:inset 0 -3px #a8740c,inset 0 2px #ffe08a}
-button.s:hover{background:#ffc43a}
-input[type=text]{background:#0c0e1c;border:2px solid #5a6a99;color:#fff;padding:.8cqw;font-size:max(8px,1.3cqw)}
-input[type=range]{width:14cqw}
-.sw{width:max(14px,1.8cqw);height:max(14px,1.8cqw)}
-.mm{display:flex;flex-direction:column;width:100%;height:100%;padding:3cqw 4cqw;box-sizing:border-box}
-.mm h1{margin:0;font-size:max(18px,6.2cqw);color:#ffe66d;text-shadow:.5cqw .5cqw #b13e53,1cqw 1cqw #000;line-height:1.1;font-weight:normal}
-.mm h1 small{display:block;font-size:.2em;color:#9ad1ff;text-shadow:2px 2px #000;margin-top:1.4cqw;letter-spacing:.2cqw}
-.cols{display:flex;gap:3cqw;margin-top:3cqw;flex:1;min-height:0}
-.nav{display:flex;flex-direction:column;gap:1cqw;width:25cqw}
-.nav button{text-align:left;margin:0;padding:1.2cqw 1.6cqw}
-.card{background:#1d2138cc;border:3px solid #3a4466;padding:1.6cqw;width:19cqw;display:flex;flex-direction:column;align-items:center;gap:1cqw;align-self:flex-start}
+#ui{overflow:auto;background:rgba(5,4,12,0.88)}
+
+/* Menú Principal Dinámico tipo AAA */
+.mm{display:flex;flex-direction:column;width:100%;height:100%;padding:3.5cqw 4.5cqw;box-sizing:border-box}
+.mm h1{margin:0;font-size:max(20px,5.8cqw);color:var(--accent-gold);text-shadow:.4cqw .4cqw var(--accent-pink),.9cqw .9cqw #000;line-height:1.1;font-weight:normal;letter-spacing:-1px}
+.mm h1 small{display:block;font-size:.22em;color:var(--accent-cyan);text-shadow:2px 2px #000;margin-top:1.2cqw;letter-spacing:.25cqw}
+.cols{display:flex;gap:3cqw;margin-top:2.8cqw;flex:1;min-height:0}
+.nav{display:flex;flex-direction:column;gap:1.1cqw;width:28cqw}
+.nav button{text-align:left;margin:0;padding:1.3cqw 1.8cqw;font-size:max(9px,1.3cqw)}
+
+.card{background:rgba(14, 11, 31, 0.75);border:2px solid #3c2f63;padding:1.8cqw;width:21cqw;display:flex;flex-direction:column;align-items:center;gap:1.2cqw;align-self:flex-start;border-radius:6px;box-shadow:0 8px 20px rgba(0,0,0,0.5)}
 .card input{width:100%;box-sizing:border-box;text-align:center}
-.card button{margin:0}
-.info{margin-left:auto;align-self:flex-end;text-align:right;opacity:.75;font-size:max(7px,1cqw);line-height:2.2}
-.rm{display:flex;align-items:center;gap:1.5cqw;justify-content:space-between;background:#0c0e1c88;padding:.7cqw 1.2cqw;margin:.6cqw 0}
-#rl{max-height:20cqw;overflow:auto;min-width:38cqw}
+.card button{margin:0;width:100%}
+
+.info{margin-left:auto;align-self:flex-end;text-align:right;opacity:.85;font-size:max(7px,1.05cqw);line-height:2.2;color:var(--text-dim);background:rgba(0,0,0,0.4);padding:1.2cqw 1.8cqw;border-right:3px solid var(--accent-cyan);border-radius:4px}
+
+/* Salas y Multijugador */
+.rm{display:flex;align-items:center;gap:1.5cqw;justify-content:space-between;background:rgba(12,10,26,0.85);border:1px solid #3c2f63;padding:.9cqw 1.4cqw;margin:.7cqw 0;border-radius:4px}
+.rm:hover{border-color:var(--accent-cyan);background:rgba(18,15,40,0.9)}
+#rl{max-height:22cqw;overflow-y:auto;min-width:40cqw;padding-right:4px}
+
+/* Tienda eInventario Grid */
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2cqw;margin:1.2cqw 0}
-.it{background:#0c0e1c99;border:2px solid #3a4466;padding:1cqw;display:flex;flex-direction:column;align-items:center;gap:.6cqw}
-.it.eq{border-color:#ffe66d}.it span{font-size:.8em;opacity:.8;min-height:2.6em}.it button{margin:0}
-.ic{width:6cqw;height:6cqw;image-rendering:pixelated}
+.it{background:rgba(11,9,24,0.9);border:2px solid #3c2f63;padding:1.2cqw;display:flex;flex-direction:column;align-items:center;gap:.7cqw;border-radius:5px;transition:all .15s ease}
+.it:hover{border-color:var(--accent-cyan);transform:translateY(-2px)}
+.it.eq{border-color:var(--accent-gold);background:rgba(30,24,10,0.4);box-shadow:0 0 12px rgba(251,197,49,0.25)}
+.it span{font-size:.78em;opacity:.75;min-height:2.6em;color:var(--text-dim)}
+.it button{margin:0;width:100%}
+.ic{width:6.5cqw;height:6.5cqw;image-rendering:pixelated;background:rgba(0,0,0,0.5);border-radius:4px;padding:4px}
+
 #hud{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
 html:fullscreen #w{max-width:calc(100vh*16/9)}
 html:-webkit-full-screen #w{max-width:calc(100vh*16/9)}
-#fs{position:absolute;top:1cqw;right:1cqw;z-index:5;margin:0;padding:.5cqw .9cqw;font-size:max(10px,1.8cqw)}
+#fs{position:absolute;top:1.2cqw;right:1.2cqw;z-index:5;margin:0;padding:.6cqw 1cqw;font-size:max(10px,1.6cqw);background:rgba(14,11,31,0.8);border-color:#3c2f63}
+#fs:hover{border-color:var(--accent-cyan)}
 </style></head><body><div id="w"><canvas id="c"></canvas><canvas id="hud"></canvas><button id="fs" tabindex="-1" title="Pantalla completa">⛶</button><div id="ui"></div></div>
 <script>
 const W=320,H=180,T=16,MW=110,MH=80;
@@ -337,7 +441,7 @@ function onNet(d){
  else if(d.t==='nm'){vote=null;start('surv',1,d.m)}
  else if(d.t==='left')delete net.rem[d.id];
  else if(d.t==='host'){net.host=true;nid=enemies.reduce((a,e)=>Math.max(a,e.id),0)+1}}
-const DEFAULT_SERVER='wss://shooter-nhyt.onrender.com'; // <-- cambialo por la direccion de tu servidor (wss://...)
+const DEFAULT_SERVER='ws://localhost:8080'; // <-- cambialo por la direccion de tu servidor (wss://...)
 const raw=o=>{if(net.ws&&net.ws.readyState===1)net.ws.send(JSON.stringify(o))};
 function connect(url){let w,ok=false,done=false,tm;
  const fail=m=>{if(done)return;done=true;clearTimeout(tm);try{w.close()}catch(e){}online(m)};
@@ -449,7 +553,7 @@ function draw(){
  TX((V.eq+1)+' '+WP[V.eq].n.toUpperCase()+'   B TIENDA',4,H-5,3.8,WP[V.eq].col);
  drawArrow();drawMini();
  if(bn.l>0){hg.globalAlpha=Math.min(1,bn.l);TX(bn.s,W/2,58,8,'#ffe66d','center');hg.globalAlpha=1}
- if(p.dead>0&&p.dead<=1000)TX('REAPARECIENDO EN '+Math.ceil(p.dead),W/2,H/2,6,'#fff','center');
+ if(p.dead>0&&p.dead<=1000)TX('REAPARECIENDO IN '+Math.ceil(p.dead),W/2,H/2,6,'#fff','center');
  if(p.dead>1000){const al=aliveRem(),r=al.length?al[spec%al.length]:null;TX('ESPECTADOR'+(r?': '+(r.name||'?'):''),W/2,H-16,5,'#ffe66d','center');TX('CLICK PARA CAMBIAR · REVIVÍS EN EL PRÓXIMO NIVEL',W/2,H-7,3.4,'#fff','center')}
  if(state==='play'&&!paused){g.fillStyle='#fff';g.fillRect(mx-4,my,3,1);g.fillRect(mx+2,my,3,1);g.fillRect(mx,my-4,1,3);g.fillRect(mx,my+2,1,3)}
 }
@@ -461,7 +565,7 @@ function close(){ui.classList.remove('on');ui.innerHTML=''}
 const open=()=>ui.classList.contains('on');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function drawPv(){const q=$('#pv');if(!q)return;const x=q.getContext('2d');x.clearRect(0,0,40,44);drawChar(x,20,38,{ang:1.3,walk:0,moving:false,arm:V.arm},V.av)}
-function main(msg){state='menu';paused=false;ret=main;panel(`<div class=mm><h1>PIXEL SHOOTER<small>SOBREVIVÍ · COMPRÁ ARMAS · JUGÁ CON AMIGOS</small></h1>${msg?`<div style="color:#ff9d9d;margin-top:1.2cqw">${esc(msg)}</div>`:''}<div class=cols><div class=nav><button class=s data-a=camp>▶ CAMPAÑA</button><button data-a=surv>SUPERVIVENCIA</button><button data-a=online>ONLINE</button><button data-a=shop>TIENDA</button><button data-a=set>AJUSTES</button></div><div class=card><input type=text data-k=name maxlength=12 placeholder="TU USUARIO" value="${esc(V.av.name)}"><canvas id=pv width=40 height=44 style="width:11cqw;height:12cqw;image-rendering:pixelated"></canvas><button data-a=avatar>PERSONALIZAR</button><div style="color:#ffd23f">● ${V.coins}</div></div><div class=info>WASD · MOVER<br>MOUSE · APUNTAR Y DISPARAR<br>1-5 · CAMBIAR ARMA<br>B · TIENDA<br>ESC · PAUSA<br>F · PANTALLA COMPLETA<br>M · MINIMAPA</div></div></div>`,1);drawPv()}
+function main(msg){state='menu';paused=false;ret=main;panel(`<div class=mm><h1>PIXEL SHOOTER<small>TACTICAL CO-OP ARCADE</small></h1>${msg?`<div style="color:#ff4757;margin-top:1.2cqw">${esc(msg)}</div>`:''}<div class=cols><div class=nav><button class=s data-a=camp>▶ CAMPAÑA</button><button data-a=surv>SUPERVIVENCIA</button><button data-a=online>ONLINE</button><button data-a=shop>TIENDA</button><button data-a=set>AJUSTES</button></div><div class=card><input type=text data-k=name maxlength=12 placeholder="TU USUARIO" value="${esc(V.av.name)}"><canvas id=pv width=40 height=44 style="width:11cqw;height:12cqw;image-rendering:pixelated"></canvas><button data-a=avatar>PERSONALIZAR</button><div style="color:#fbc531">● ${V.coins}</div></div><div class=info>WASD · MOVER<br>MOUSE · APUNTAR Y DISPARAR<br>1-5 · CAMBIAR ARMA<br>B · TIENDA<br>ESC · PAUSA<br>F · PANTALLA COMPLETA<br>M · MINIMAPA</div></div></div>`,1);drawPv()}
 function pauseMenu(){paused=true;ret=pauseMenu;panel(`<h2>Pausa</h2><button class=s data-a=resume>Continuar</button><button data-a=shop>Tienda</button><button data-a=set>Ajustes</button><button data-a=quit>Salir al menú</button>`)}
 function over(){ret=over;panel(`<h2>Game Over</h2><div class=r>Bajas: ${kills} · Mejor: ${best}</div><button class=s data-a=retry>Reintentar</button><button data-a=shop>Tienda</button><button data-a=quit>Menú</button>`)}
 function clearMenu(){ret=clearMenu;panel(lvl<5?`<h2>¡Nivel ${lvl} completado!</h2><div class=r>Bonus: +${lvl*10} monedas</div><button class=s data-a=next>Siguiente nivel</button><button data-a=shop>Tienda</button><button data-a=quit>Menú</button>`:`<h2>¡VICTORIA!</h2><div class=r>Derrotaste al Rey Slime. Bonus: +50 monedas</div><button data-a=shop>Tienda</button><button class=s data-a=quit>Menú</button>`);if(lvl===5){V.coins+=40;save()}}
@@ -474,7 +578,7 @@ function shop(tb){if(tb!==undefined)shopTab=+tb;
   :shopTab==1?ARM.map((a,i)=>({k:'a',i,n:a.n,d:'Absorbe '+a.a+(a.a>1?' golpes':' golpe'),pr:a.pr,own:V.armo.includes(i),eq:V.arm==i}))
   :PETS.map((q,i)=>({k:'p',i,n:q.n,d:q.d,pr:q.pr,own:V.peto.includes(i),eq:V.pet==i}));
  const card=it=>`<div class="it${it.eq?' eq':''}"><canvas class=ic data-k=${it.k} data-i=${it.i} width=24 height=24></canvas><b>${it.n}</b><span>${it.d}</span>`+(it.own?(it.eq?`<button disabled>EQUIPADO</button>`+(it.k!='w'?`<button data-a=un data-v=${it.k}>QUITAR</button>`:''):`<button class=s data-a=eqi data-k=${it.k} data-v=${it.i}>EQUIPAR</button>`):`<button data-a=buyi data-k=${it.k} data-v=${it.i} ${V.coins<it.pr?'disabled':''}>● ${it.pr}</button>`)+`</div>`;
- panel(`<h2>TIENDA</h2><div class=r>Monedas: <b style="color:#ffd23f">${V.coins}</b></div><div>${tabs}</div><div class=grid>${items.map(card).join('')}</div>${shopTab==1?'<div class=r style="opacity:.7">La armadura se activa al empezar cada nivel o partida.</div>':''}<button class=s data-a=back>VOLVER</button>`);
+ panel(`<h2>TIENDA</h2><div class=r>Monedas: <b style="color:#fbc531">${V.coins}</b></div><div>${tabs}</div><div class=grid>${items.map(card).join('')}</div>${shopTab==1?'<div class=r style="opacity:.7">La armadura se activa al empezar cada nivel o partida.</div>':''}<button class=s data-a=back>VOLVER</button>`);
  document.querySelectorAll('.ic').forEach(cv=>icon(cv.getContext('2d'),cv.dataset.k,+cv.dataset.i))}
 function icon(x,k,i){const Q=(a,b,w,h,c)=>{x.fillStyle=c;x.fillRect(a,b,w,h)};
  if(k=='w'){const w=WP[i];Q(3,11,18,5,'#666');Q(3,15,6,7,'#555');Q(17,10,5,3,w.col);Q(5,9,8,2,'#888');if(w.pel>1){Q(19,8,3,1,w.col);Q(19,14,3,1,w.col)}if(i>=3)Q(8,12,6,2,w.col)}
@@ -502,14 +606,14 @@ const SK=['#f2c18d','#e0a370','#c68642','#8d5524','#ffdfc4'],HR=['#5a3a22','#111
 const sw=(k,l)=>l.map(x=>`<span class="sw${V.av[k]==x?' s':''}" style="background:${x}" data-a=col data-k=${k} data-v="${x}"></span>`).join('');
 function avatar(){panel(`<h2>Avatar</h2><canvas id=pv width=40 height=44 style="width:120px;height:132px;image-rendering:pixelated"></canvas><div class=r>Nombre <input type=text data-k=name value="${esc(V.av.name)}" maxlength=12></div><div class=r>Piel ${sw('skin',SK)}</div><div class=r>Pelo ${sw('hair',HR)}</div><div class=r>Ropa ${sw('shirt',SH)}</div><div class=r>Accesorio <button data-a=acc data-v=0>Ninguno</button><button data-a=acc data-v=1>Gorra</button><button data-a=acc data-v=2>Corona</button></div><button class=s data-a=back>Listo</button>`);
  drawPv()}
-function online(msg){net.lob=false;panel(`<h2>${net.mode==='camp'?'CAMPAÑA':'SUPERVIVENCIA'} ONLINE</h2><div class=r>Servidor<br><input type=text id=su style="width:34cqw" value="${esc(V.srv||DEFAULT_SERVER)}"></div>${msg?`<div class=r style="color:#ff9d9d">${esc(msg)}</div>`:''}<button class=s data-a=conn>CONECTAR</button><button data-a=online>CAMBIAR MODO</button><button data-a=back>MENÚ</button>`)}
+function online(msg){net.lob=false;panel(`<h2>${net.mode==='camp'?'CAMPAÑA':'SUPERVIVENCIA'} ONLINE</h2><div class=r>Servidor<br><input type=text id=su style="width:34cqw" value="${esc(V.srv||DEFAULT_SERVER)}"></div>${msg?`<div class=r style="color:#ff4757">${esc(msg)}</div>`:''}<button class=s data-a=conn>CONECTAR</button><button data-a=online>CAMBIAR MODO</button><button data-a=back>MENÚ</button>`)}
 const pref=()=>net.mode==='camp'?'C|':'S|';
 function modeSel(){panel(`<h2>MODO ONLINE</h2><div class=r>¿Qué querés jugar con tus amigos?</div><button class=s data-a=om data-v=camp>CAMPAÑA COOPERATIVA</button><button data-a=om data-v=surv>SUPERVIVENCIA COOPERATIVA</button><br><button data-a=back>VOLVER</button>`)}
 function updRooms(){const el=$('#rl');if(!el)return;const P=pref(),L=(net.rooms||[]).filter(r=>r[0].startsWith(P));
  for(let i=1;i<=3;i++)if(!L.some(r=>r[0]===P+'Sala '+i))L.push([P+'Sala '+i,0,4]);
  L.sort((a,b)=>a[0]<b[0]?-1:1);
  el.innerHTML=L.map(([n,c,mx])=>`<div class=rm><span>${esc(n.slice(2))}</span><span>${c}/${mx}</span><button ${c>=mx?'disabled':''} data-a=join data-v="${esc(n)}">UNIRSE</button></div>`).join('')}
-function lobby(msg){panel(`<h2>SALAS · ${net.mode==='camp'?'CAMPAÑA':'SUPERVIVENCIA'}</h2><div class=r>Jugás como <b style="color:#ffe66d">${esc(V.av.name)}</b></div>${msg?`<div class=r style="color:#ff9d9d">${esc(msg)}</div>`:''}<div id=rl></div><div class=r>Nueva sala <input type=text id=nr maxlength=20 placeholder="NOMBRE"> <button class=s data-a=make>CREAR</button></div><button data-a=lback>VOLVER</button>`);updRooms()}
+function lobby(msg){panel(`<h2>SALAS · ${net.mode==='camp'?'CAMPAÑA':'SUPERVIVENCIA'}</h2><div class=r>Jugás como <b style="color:#fbc531">${esc(V.av.name)}</b></div>${msg?`<div class=r style="color:#ff4757">${esc(msg)}</div>`:''}<div id=rl></div><div class=r>Nueva sala <input type=text id=nr maxlength=20 placeholder="NOMBRE"> <button class=s data-a=make>CREAR</button></div><button data-a=lback>VOLVER</button>`);updRooms()}
 const A={camp:()=>start('camp',1),surv:()=>start('surv'),online:()=>modeSel(),vote:v=>{if(!vote)return;vote.mine=+v;if(net.host)vote.votes[net.id]=+v;else snd({t:'vt',i:+v});updVote()},om:v=>{net.mode=v;online()},tab:v=>shop(v),eqi:(v,k)=>{if(k=='w')V.eq=+v;if(k=='a')V.arm=+v;if(k=='p')V.pet=+v;save();shop()},un:v=>{if(v=='a')V.arm=-1;if(v=='p')V.pet=-1;save();shop()},buyi:(v,k)=>{const L=k=='w'?WP:k=='a'?ARM:PETS,o=k=='w'?V.owned:k=='a'?V.armo:V.peto,i=+v;if(V.coins>=L[i].pr){V.coins-=L[i].pr;o.push(i);A.eqi(v,k)}},avatar,shop,set:settings,back:()=>ret(),next:()=>start('camp',lvl+1),retry:()=>start(mode,lvl),
  resume:()=>{paused=false;close()},quit:()=>{if(net.on){net.on=false;try{net.ws.close()}catch(e){}}save();main()},
  eq:v=>{V.eq=+v;save();shop()},buy:v=>{const w=WP[+v];if(V.coins>=w.pr){V.coins-=w.pr;V.owned.push(+v);V.eq=+v;save();shop()}},
